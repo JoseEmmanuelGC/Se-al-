@@ -24,7 +24,7 @@
         return Math.sin(x) + Math.random();
       }
 
-      function firstData(start) {
+      function firstData() {
         start = START_TIME * POINTS_PER_UNIT
         limit = start + (WIDTH * POINTS_PER_UNIT)
         array = [];
@@ -50,7 +50,7 @@
       data.addColumn('number', '');
       data.addColumn('number', 'f(x)');
 
-      data.addRows(firstData(time));
+      data.addRows(firstData());
 
       var options = {
         hAxis: {
