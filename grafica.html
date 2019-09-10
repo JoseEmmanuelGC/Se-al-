@@ -13,34 +13,48 @@
     google.charts.load('current', {packages: ['corechart', 'line']});
     google.charts.setOnLoadCallback(drawChart);
 
-    function func(x) {
-      return Math.sin(x) + Math.random();
-    }
-
-    function firstData(n) {
-      array = [];
-      for (var i = 0; i < n; i++) {
-        tuple = [i / 10, func(i / 10)];
-        array.push(tuple);
-      }
-      return array;
-    }
-
     function drawChart() {
-      let time = 200;
+      const POINTS_PER_SECOND = 60
+      const POINTS_PER_UNIT = 10
+      const START_TIME = 0
+      const WIDTH = 20
+
+      // Functions<<<
+      function func(x) {
+        return Math.sin(x) + Math.random();
+      }
+
+      function firstData(start) {
+        start = START_TIME * POINTS_PER_UNIT
+        limit = start + (WIDTH * POINTS_PER_UNIT)
+        array = [];
+        for (var i = start; i < limit; i++) {
+          tuple = [i / POINTS_PER_UNIT, func(i / POINTS_PER_UNIT)];
+          array.push(tuple);
+        }
+        return array;
+      }
+
+      function addData() {
+        time += 1;
+        timeFixed = time / POINTS_PER_UNIT
+        data.removeRow(0);
+        data.addRow([timeFixed, func(timeFixed)]);
+        chart.draw(data, options)
+      }
+      // >>>Functions
+
+      let time = (START_TIME + WIDTH) * POINTS_PER_UNIT;
 
       var data = new google.visualization.DataTable();
       data.addColumn('number', '');
-      data.addColumn('number', '');
+      data.addColumn('number', 'f(x)');
 
       data.addRows(firstData(time));
 
       var options = {
         hAxis: {
-          title: 'X'
-        },
-        vAxis: {
-          title: 'Y'
+          title: 'x'
         },
         colors: ['#a52714', '#097138'],
         curveType: 'function',
@@ -49,15 +63,7 @@
       var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
       chart.draw(data, options);
 
-      
-      function addData() {
-        time += 1;
-        data.removeRow(0);
-        data.addRow([time / 10, func(time / 10)]);
-        chart.draw(data, options)
-      }
-
-      setInterval(addData, 250)
+      setInterval(addData, 1000 / POINTS_PER_SECOND)
     }
   </script>
 </html>
