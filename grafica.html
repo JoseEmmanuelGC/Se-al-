@@ -23,14 +23,18 @@
       function func(x) {
         return Math.sin(x);
       }
+      function funcPlusNoise(x) {
+        return Math.sin(x) + Math.sin(x / 5)
+      }
 
       function firstData() {
         start = START_TIME * POINTS_PER_UNIT
         limit = start + (WIDTH * POINTS_PER_UNIT)
         array = [];
         for (var i = start; i < limit; i++) {
-          tuple = [i / POINTS_PER_UNIT, func(i / POINTS_PER_UNIT)];
-          array.push(tuple);
+          timeFixed = i / POINTS_PER_UNIT
+          values = [timeFixed, func(timeFixed), funcPlusNoise(timeFixed)];
+          array.push(values);
         }
         return array;
       }
@@ -39,7 +43,7 @@
         time += 1;
         timeFixed = time / POINTS_PER_UNIT
         data.removeRow(0);
-        data.addRow([timeFixed, func(timeFixed)]);
+        data.addRow([timeFixed, func(timeFixed), funcPlusNoise(timeFixed)]);
         chart.draw(data, options)
       }
       // >>>Functions
@@ -49,12 +53,17 @@
       var data = new google.visualization.DataTable();
       data.addColumn('number', '');
       data.addColumn('number', 'sen(x)');
+      data.addColumn('number', 'sen(x) + sin(x/5)');
 
       data.addRows(firstData());
 
       var options = {
         hAxis: {
-          title: 'x'
+          title: 'x',
+        },
+        vAxis: {
+          minValue: -4, 
+          maxValue: 4
         },
         colors: ['#a52714', '#097138'],
         curveType: 'function',
