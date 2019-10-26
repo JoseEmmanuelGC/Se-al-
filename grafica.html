@@ -19,12 +19,39 @@
       const START_TIME = 0
       const WIDTH = 20
 
+      // Gaussian Noise Generator <<<
+      function valueFromGaussianDistribution(min, max) {
+        result = 0
+        do {
+          value1 = 0
+          value2 = 0
+          rand  = 0
+
+          do {
+              value1 = (2 * Math.random()) - 1
+              value2 = (2 * Math.random()) - 1
+              rand  = (value1 * value1) + (value2 * value2)
+          } while (rand >= 1)
+
+          rand = Math.sqrt((-2 * Math.log(rand)) / rand)
+
+          result = value1 * rand
+        } while (result > max || result < min)
+        return result
+      }
+      // >>> Gaussian Noise Generator
+
       // Functions<<<
       function func(x) {
         return Math.sin(x);
       }
-      function funcPlusNoise(x) {
-        return Math.sin(x) + Math.sin(x / 5)
+      
+      function noiseSNR5(x) {
+        return (Math.sin(x) / 5)
+      }
+      
+      function gaussianNoiseSNR10() {
+        return valueFromGaussianDistribution(-1, 1) / 10
       }
 
       function firstData() {
@@ -33,7 +60,10 @@
         array = [];
         for (var i = start; i < limit; i++) {
           timeFixed = i / POINTS_PER_UNIT
-          values = [timeFixed, func(timeFixed), funcPlusNoise(timeFixed)];
+          values = [timeFixed,
+            func(timeFixed),
+            func(timeFixed) + noiseSNR5(timeFixed),
+            func(timeFixed) + gaussianNoiseSNR10()];
           array.push(values);
         }
         return array;
@@ -43,7 +73,10 @@
         time += 1;
         timeFixed = time / POINTS_PER_UNIT
         data.removeRow(0);
-        data.addRow([timeFixed, func(timeFixed), funcPlusNoise(timeFixed)]);
+        data.addRow([timeFixed,
+          func(timeFixed),
+          func(timeFixed) + noiseSNR5(timeFixed),
+          func(timeFixed) + gaussianNoiseSNR10()]);
         chart.draw(data, options)
       }
       // >>>Functions
@@ -53,7 +86,8 @@
       var data = new google.visualization.DataTable();
       data.addColumn('number', '');
       data.addColumn('number', 'sen(x)');
-      data.addColumn('number', 'sen(x) + sin(x/5)');
+      data.addColumn('number', 'sen(x) + (sin(x)/5)');
+      data.addColumn('number', 'sen(x) + GaussianNoise/10');
 
       data.addRows(firstData());
 
@@ -61,11 +95,7 @@
         hAxis: {
           title: 'x',
         },
-        vAxis: {
-          minValue: -4, 
-          maxValue: 4
-        },
-        colors: ['#a52714', '#097138'],
+        colors: ['#a52714', '#097138', '#5427a4'],
         curveType: 'function',
       };
 
