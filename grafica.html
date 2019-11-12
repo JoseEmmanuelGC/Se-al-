@@ -6,7 +6,14 @@
   </head>
   <body>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <div id="chart_div"></div>
+    <h1> Sen(x) </h1>
+    <div id="chart_div_1"></div>
+    <h1> Sen(x) + (sin(x)/5) </h1>
+    <div id="chart_div_2"></div>
+    <h1> Sen(x) + GaussianNoise/10 </h1>
+    <div id="chart_div_3"></div>
+    <h1> Sen(x) + GaussianNoise/10 Quantized </h1>
+    <div id="chart_div_4"></div>
   </body>
 
   <script>
@@ -18,6 +25,7 @@
       const POINTS_PER_UNIT = 10
       const START_TIME = 0
       const WIDTH = 20
+      const RANGE = 0.20
 
       // Gaussian Noise Generator <<<
       function valueFromGaussianDistribution(min, max) {
@@ -41,6 +49,22 @@
       }
       // >>> Gaussian Noise Generator
 
+      // Quantization functions <<<
+      function quantize(value, range) {
+      	division = Math.floor(value / range)
+      	value = division * range
+      	return value + (range / 2)
+      }
+
+      function quantizeList(list, range) {
+      	for (var i = 0; i < list.length; i++) {
+      		list[i][1] = quantize(list[i][1], range)
+      	}
+
+      	return list
+      }
+      // >>> Quantization functions
+
       // Functions<<<
       function func(x) {
         return Math.sin(x);
@@ -54,16 +78,24 @@
         return valueFromGaussianDistribution(-1, 1) / 10
       }
 
-      function firstData() {
+      function firstData(typeFunction) {
         start = START_TIME * POINTS_PER_UNIT
         limit = start + (WIDTH * POINTS_PER_UNIT)
-        array = [];
+        array = []
+
         for (var i = start; i < limit; i++) {
+        	values = []
           timeFixed = i / POINTS_PER_UNIT
-          values = [timeFixed,
-            func(timeFixed),
-            func(timeFixed) + noiseSNR5(timeFixed),
-            func(timeFixed) + gaussianNoiseSNR10()];
+
+          switch(typeFunction) {
+          	case 1: values = [timeFixed, func(timeFixed)];
+          		break
+          	case 2: values = [timeFixed, func(timeFixed) + noiseSNR5(timeFixed)];
+          		break
+          	case 3: values = [timeFixed, func(timeFixed) + gaussianNoiseSNR10()];
+          		break
+          }
+
           array.push(values);
         }
         return array;
@@ -72,35 +104,95 @@
       function addData() {
         time += 1;
         timeFixed = time / POINTS_PER_UNIT
-        data.removeRow(0);
-        data.addRow([timeFixed,
-          func(timeFixed),
-          func(timeFixed) + noiseSNR5(timeFixed),
-          func(timeFixed) + gaussianNoiseSNR10()]);
-        chart.draw(data, options)
+        
+        data1.removeRow(0);
+        data1.addRow([timeFixed, func(timeFixed)]);
+        chart1.draw(data1, options1)
+        
+        data2.removeRow(0);
+        data2.addRow([timeFixed, func(timeFixed) + noiseSNR5(timeFixed)]);
+        chart2.draw(data2, options2)
+
+        funcWithNoise = func(timeFixed) + gaussianNoiseSNR10()
+        
+        data3.removeRow(0);
+        data3.addRow([timeFixed, funcWithNoise]);
+        chart3.draw(data3, options3)
+        
+        data4.removeRow(0);
+        data4.addRow([timeFixed, quantize(funcWithNoise, RANGE)]);
+        chart4.draw(data4, options4)
       }
       // >>>Functions
 
       let time = (START_TIME + WIDTH) * POINTS_PER_UNIT;
 
-      var data = new google.visualization.DataTable();
-      data.addColumn('number', '');
-      data.addColumn('number', 'sen(x)');
-      data.addColumn('number', 'sen(x) + (sin(x)/5)');
-      data.addColumn('number', 'sen(x) + GaussianNoise/10');
+      var data1 = new google.visualization.DataTable();
+      var data2 = new google.visualization.DataTable();
+      var data3 = new google.visualization.DataTable();
+      var data4 = new google.visualization.DataTable();
+      data1.addColumn('number', '');
+      data1.addColumn('number', '');
+      data2.addColumn('number', '');
+      data2.addColumn('number', '');
+      data3.addColumn('number', '');
+      data3.addColumn('number', '');
+      data4.addColumn('number', '');
+      data4.addColumn('number', '');
 
-      data.addRows(firstData());
+      data1.addRows(firstData(1));
+      data2.addRows(firstData(2));
+      dataWithNoise = firstData(3)
+      data3.addRows(dataWithNoise);
+      data4.addRows(quantizeList(dataWithNoise, RANGE));
 
-      var options = {
-        hAxis: {
-          title: 'x',
+      hAxis = { title: 'x' }
+      colors = ['#a52714', '#097138', '#5427a4']
+      curveType = 'function'
+
+      var options1 = {
+        hAxis,
+        colors,
+        curveType,
+        vAxis: {
+          title: 'Sen(x)',
         },
-        colors: ['#a52714', '#097138', '#5427a4'],
-        curveType: 'function',
       };
 
-      var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-      chart.draw(data, options);
+      var options2 = {
+        hAxis,
+        colors,
+        curveType,
+        vAxis: {
+          title: 'Sen(x) + (sin(x)/5)',
+        },
+      };
+
+      var options3 = {
+        hAxis,
+        colors,
+        curveType,
+        vAxis: {
+          title: 'Sen(x) + GaussianNoise/10',
+        },
+      };
+
+      var options4 = {
+        hAxis,
+        colors,
+        vAxis: {
+          title: 'Sen(x) + GaussianNoise/10 Quantized',
+        },
+      };
+
+      var chart1 = new google.visualization.LineChart(document.getElementById('chart_div_1'));
+      chart1.draw(data1, options1);
+      var chart2 = new google.visualization.LineChart(document.getElementById('chart_div_2'));
+      chart2.draw(data2, options2);
+      var chart3 = new google.visualization.LineChart(document.getElementById('chart_div_3'));
+      chart3.draw(data3, options3);
+      var chart4 = new google.visualization.LineChart(document.getElementById('chart_div_4'));
+      chart4.draw(data4, options4);
 
       setInterval(addData, 1000 / POINTS_PER_SECOND)
     }
