@@ -25,7 +25,7 @@
       const POINTS_PER_UNIT = 10
       const START_TIME = 0
       const WIDTH = 20
-      const RANGE = 0.20
+      const RANGE = .4
 
       // Gaussian Noise Generator <<<
       function valueFromGaussianDistribution(min, max) {
@@ -53,7 +53,9 @@
       function quantize(value, range) {
       	division = Math.floor(value / range)
       	value = division * range
-      	return value + (range / 2)
+        quantized = value + (range / 2)
+        sendData(serialize(quantized))
+        return quantized
       }
 
       function quantizeList(list, range) {
@@ -64,6 +66,39 @@
       	return list
       }
       // >>> Quantization functions
+
+      // Serialization functions
+      function serialize(value) {
+        if (value <= -1)
+          return "000"
+        else if (value <= -.6)
+          return "001"
+        else if (value <= -.2)
+          return "010"
+        else if (value >= 1)
+          return "101"
+        else if (value >= .6)
+          return "100"
+        else if (value >= .2)
+          return "011"
+
+        return value
+      }
+
+      function sendData(data) {
+        var xhttp = new XMLHttpRequest();
+
+        xhttp.onerror = function(e) {
+          console.log('error', e);
+        };
+
+        xhttp.open("POST", "http://127.0.0.1:8080/", true);
+        xhttp.setRequestHeader("Content-Type", "application/json");
+        xhttp.send(JSON.stringify({
+                serial: data
+        }));
+      }
+      // Serialization functions
 
       // Functions<<<
       function func(x) {
