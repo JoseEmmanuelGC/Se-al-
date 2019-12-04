@@ -29,5 +29,5 @@ process
   });
 
 app.listen(port, function () {
-  console.log('RESTful API server started on: ' + port);
+  console.log('Server listening at port ' + port);
 });
